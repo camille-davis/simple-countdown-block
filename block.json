@@ -34,6 +34,5 @@
 			"background": true
 		}
 	},
-	"style": "file:./style.css",
-	"viewScript": "file:./countdown.js"
+	"style": "file:./style.css"
 }

@@ -1,10 +1,12 @@
 (function () {
 	const { registerBlockType } = wp.blocks;
 	const { useBlockProps, InspectorControls } = wp.blockEditor;
-	const { PanelBody, BaseControl, TextControl, SelectControl } = wp.components;
-	const { createElement, useState, useEffect } = wp.element;
-	const { __ } = wp.i18n;
+	const { PanelBody, BaseControl, SelectControl } = wp.components;
+	const { createElement } = wp.element;
 	const { SVG, Path } = wp.primitives;
+
+	// Get localized strings from wp_localize_script.
+	const LOCALIZED_DATA = simpleCountdownBlock;
 
 	// Scheduled icon from Gutenberg icon library.
 	const scheduledIcon = createElement(SVG, {
@@ -15,37 +17,17 @@
 		fillRule: 'evenodd',
 	}));
 
-	// ============================================================================
-	// Countdown utilities - same as in countdown.js
-	// ============================================================================
-
-	const zeros = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+	// Default values for countdown.
+	const ZEROS = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
 	// Time constants for countdown calculations
 	const MS_PER_DAY = 86400000; // 1000 * 60 * 60 * 24
 	const MS_PER_HOUR = 3600000; // 1000 * 60 * 60
 	const MS_PER_MINUTE = 60000; // 1000 * 60
 
-	// Translated labels for days, hours, minutes, and seconds.
-	const textDomain = 'simple-countdown-block';
-	const LABELS = {
-		days: {
-			singular: __('Day', textDomain),
-			plural: __('Days', textDomain)
-		},
-		hours: {
-			singular: __('Hour', textDomain),
-			plural: __('Hours', textDomain)
-		},
-		minutes: {
-			singular: __('Minute', textDomain),
-			plural: __('Minutes', textDomain)
-		},
-		seconds: {
-			singular: __('Second', textDomain),
-			plural: __('Seconds', textDomain)
-		}
-	};
+	// ============================================================================
+	// Countdown utilities - same as in countdown.js
+	// ============================================================================
 
 	/**
 	 * Convert date, time, and timezone to UTC timestamp.
@@ -126,7 +108,7 @@
 		const diff = targetDate - now;
 
 		if (diff <= 0) {
-			return zeros;
+			return ZEROS;
 		}
 
 		// Calculate time components from UTC difference.
@@ -172,18 +154,19 @@
 	 * @returns {Array} Array of timezone option objects.
 	 */
 	function getTimezoneOptions() {
+		const timezones = LOCALIZED_DATA.timezones;
 		return [
-			{ label: __('UTC', 'simple-countdown-block'), value: 'UTC' },
-			{ label: __('America/New_York (EST/EDT)', 'simple-countdown-block'), value: 'America/New_York' },
-			{ label: __('America/Chicago (CST/CDT)', 'simple-countdown-block'), value: 'America/Chicago' },
-			{ label: __('America/Denver (MST/MDT)', 'simple-countdown-block'), value: 'America/Denver' },
-			{ label: __('America/Los_Angeles (PST/PDT)', 'simple-countdown-block'), value: 'America/Los_Angeles' },
-			{ label: __('Europe/London (GMT/BST)', 'simple-countdown-block'), value: 'Europe/London' },
-			{ label: __('Europe/Paris (CET/CEST)', 'simple-countdown-block'), value: 'Europe/Paris' },
-			{ label: __('Europe/Berlin (CET/CEST)', 'simple-countdown-block'), value: 'Europe/Berlin' },
-			{ label: __('Asia/Tokyo (JST)', 'simple-countdown-block'), value: 'Asia/Tokyo' },
-			{ label: __('Asia/Shanghai (CST)', 'simple-countdown-block'), value: 'Asia/Shanghai' },
-			{ label: __('Australia/Sydney (AEST/AEDT)', 'simple-countdown-block'), value: 'Australia/Sydney' },
+			{ label: timezones['UTC'], value: 'UTC' },
+			{ label: timezones['America/New_York'], value: 'America/New_York' },
+			{ label: timezones['America/Chicago'], value: 'America/Chicago' },
+			{ label: timezones['America/Denver'], value: 'America/Denver' },
+			{ label: timezones['America/Los_Angeles'], value: 'America/Los_Angeles' },
+			{ label: timezones['Europe/London'], value: 'Europe/London' },
+			{ label: timezones['Europe/Paris'], value: 'Europe/Paris' },
+			{ label: timezones['Europe/Berlin'], value: 'Europe/Berlin' },
+			{ label: timezones['Asia/Tokyo'], value: 'Asia/Tokyo' },
+			{ label: timezones['Asia/Shanghai'], value: 'Asia/Shanghai' },
+			{ label: timezones['Australia/Sydney'], value: 'Australia/Sydney' },
 		];
 	}
 
@@ -207,56 +190,13 @@
 			const { targetDate, targetTime, timezone } = attributes;
 			const blockProps = useBlockProps();
 
-			// ============================================================================
-			// State Management
-			// ============================================================================
-
-			// Local state for time input to avoid updating attribute on every keystroke.
-			const [localTime, setLocalTime] = useState(targetTime || '00:00');
-
-			// Sync local time state when the targetTime attribute changes externally
-			// (e.g., when the block is loaded or when another component updates it).
-			useEffect(function() {
-				setLocalTime(targetTime || '00:00');
-			}, [targetTime]);
-
-			// State for countdown values (calculated statically in editor).
-			// Unlike the frontend, the editor doesn't update continuously - only when attributes change.
-			const [countdown, setCountdown] = useState(zeros);
-
-			// ============================================================================
-			// ============================================================================
-
-			// Calculate countdown when attributes change (no continuous updates in editor).
-			useEffect(function () {
-
-				// If no target date is set, show zeros for all countdown units.
-				if (!targetDate) {
-					setCountdown(zeros);
-					return;
-				}
-
-				try {
-					// Use localTime if targetTime is not set yet (user hasn't blurred the time field).
-					// This allows the countdown to update in real-time as the user types.
-					const timeToUse = targetTime || localTime || '00:00';
-
-					// Convert the date, time, and timezone to a UTC timestamp.
-					const target = new Date(convertToUTC(targetDate, timeToUse, timezone || 'UTC'));
-
-					// Check if the date is valid (isNaN check for invalid dates).
-					if (isNaN(target.getTime())) {
-						setCountdown(zeros);
-						return;
-					}
-
-					// Calculate and set the countdown values.
-					setCountdown(calculateCountdown(target));
-				} catch (error) {
-					// If any error occurs during calculation, show zeros.
-					setCountdown(zeros);
-				}
-			}, [targetDate, targetTime, localTime, timezone]);
+			// Calculate countdown values from attributes.
+			let countdown = ZEROS;
+			if (targetDate) {
+				const formattedTime = formatTime(targetTime);
+				const target = new Date(convertToUTC(targetDate, formattedTime, timezone || 'UTC'));
+				countdown = calculateCountdown(target);
+			}
 
 			/**
 			 * Render a countdown unit (days, hours, minutes, or seconds).
@@ -268,6 +208,7 @@
 			const renderUnit = function (unit, value) {
 
 				// Determine the label: singular if value is 1, plural otherwise.
+				const LABELS = LOCALIZED_DATA.labels;
 				const label = value === 1 ? LABELS[unit].singular : LABELS[unit].plural;
 
 				// Create the unit element with number and label.
@@ -287,20 +228,20 @@
 				createElement(
 					InspectorControls,
 					null,
-					createElement(
-						PanelBody,
-						{ title: __('Countdown Settings'), initialOpen: true },
+				createElement(
+					PanelBody,
+					{ title: LOCALIZED_DATA.strings.countdownSettings, initialOpen: true },
 
 						// Target Date input field.
 						createElement(
 							BaseControl,
-							{ label: __('Target Date') },
+							{ label: LOCALIZED_DATA.strings.targetDate },
 							createElement('input', {
 								type: 'date',
 								value: targetDate || '',
-								onChange: function (event) {
 
-									// Update the targetDate attribute with the selected date value.
+								// Update attribute while typing.
+								onChange: function (event) {
 									setAttributes({ targetDate: event.target.value || '' });
 								},
 								className: 'components-text-control__input'
@@ -308,31 +249,48 @@
 						),
 
 						// Time input field (HH:MM format).
-						createElement(TextControl, {
-							label: __('Target Time (HH:MM)'),
-							value: localTime,
-							onBlur: function (event) {
+						createElement(
+							BaseControl,
+							{ label: LOCALIZED_DATA.strings.targetTime },
+							createElement('input', {
+								type: 'text',
+								value: targetTime || '',
 
-								// Format the time string to ensure it's valid (HH:MM format).
-								const formatted = formatTime(event.target.value || '00:00');
+								// Update attribute while typing.
+								onChange: function (event) {
+									setAttributes({ targetTime: event.target.value });
+								},
 
-								// Update both local state and the attribute.
-								setLocalTime(formatted);
-								setAttributes({ targetTime: formatted });
-							},
-							help: __('Enter time in 24-hour format (e.g., 14:30)'),
-							placeholder: '00:00'
-						}),
+								// Format time on blur or 'Enter'.
+								onBlur: function (event) {
+									const formattedTime = formatTime(event.target.value);
+									setAttributes({ targetTime: formattedTime });
+								},
+								onKeyDown: function (event) {
+									if (event.key === 'Enter') {
+										const formattedTime = formatTime(event.target.value);
+										setAttributes({ targetTime: formattedTime });
+									}
+								},
+								placeholder: '00:00',
+								className: 'components-text-control__input',
+								'aria-describedby': 'time-help-text'
+							}),
+							createElement('p', {
+								id: 'time-help-text',
+								className: 'components-base-control__help'
+							}, LOCALIZED_DATA.strings.timeHelpText)
+						),
 
 						// Timezone dropdown selector.
 						createElement(SelectControl, {
-							label: __('Timezone'),
+							label: LOCALIZED_DATA.strings.timezone,
 							value: timezone || 'UTC',
 							options: getTimezoneOptions(),
 							onChange: function (value) {
 								setAttributes({ timezone: value });
 							},
-							help: __('Select the timezone for the target date and time.')
+							help: LOCALIZED_DATA.strings.timezoneHelp
 						})
 					)
 				),

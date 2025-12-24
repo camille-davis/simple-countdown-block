@@ -4,29 +4,11 @@
 	const MS_PER_HOUR = 3600000; // 1000 * 60 * 60
 	const MS_PER_MINUTE = 60000; // 1000 * 60
 
-	const zeros = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+	// Default values for countdown.
+	const ZEROS = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-	// Translated labels for days, hours, minutes, and seconds.
-	const translate = (typeof wp !== 'undefined' && wp.i18n && wp.i18n.__) ? wp.i18n.__ : function(text) { return text; };
-	const textDomain = 'simple-countdown-block';
-	const LABELS = {
-		days: {
-			singular: translate('Day', textDomain),
-			plural: translate('Days', textDomain)
-		},
-		hours: {
-			singular: translate('Hour', textDomain),
-			plural: translate('Hours', textDomain)
-		},
-		minutes: {
-			singular: translate('Minute', textDomain),
-			plural: translate('Minutes', textDomain)
-		},
-		seconds: {
-			singular: translate('Second', textDomain),
-			plural: translate('Seconds', textDomain)
-		}
-	};
+	// Translated labels labels from wp_localize_script.
+	const LABELS = simpleCountdownBlock.labels;
 
 	/**
 	 * Convert date, time, and timezone to UTC timestamp.
@@ -107,7 +89,7 @@
 		const diff = targetDate - now;
 
 		if (diff <= 0) {
-			return zeros;
+			return ZEROS;
 		}
 
 		// Calculate time components from UTC difference.
@@ -125,9 +107,8 @@
 	 *
 	 * @param {Element} container - Container element.
 	 * @param {Object} countdown - Countdown values.
-	 * @param {Object} labels - Pre-translated labels object.
 	 */
-	function updateDisplay(container, countdown, labels) {
+	function updateDisplay(container, countdown) {
 
 		// Update all time units.
 		['days', 'hours', 'minutes', 'seconds'].forEach((unit) => {
@@ -138,7 +119,7 @@
 			item.querySelector('.wp-block-simple-countdown-block-countdown__number').textContent = value;
 
 			// Update the label (singular if value is 1, plural otherwise).
-			const label = value === 1 ? labels[unit].singular : labels[unit].plural;
+			const label = value === 1 ? LABELS[unit].singular : LABELS[unit].plural;
 			item.querySelector('.wp-block-simple-countdown-block-countdown__label').textContent = label;
 		});
 	}
@@ -148,15 +129,14 @@
 	 *
 	 * @param {Element} container - Container element.
 	 * @param {number} targetUTC - Target date as UTC timestamp (milliseconds).
-	 * @param {Object} labels - Pre-translated labels object.
 	 */
-	function updateCountdown(container, targetUTC, labels) {
+	function updateCountdown(container, targetUTC) {
 		const now = Date.now();
 		const diff = targetUTC - now;
 
 		// If the target date is in the past, return 0 for all units.
 		if (diff <= 0) {
-			updateDisplay(container, zeros, labels);
+			updateDisplay(container, ZEROS);
 			return;
 		}
 
@@ -164,7 +144,7 @@
 		const countdown = calculateCountdown(targetUTC);
 
 		// Update the display.
-		updateDisplay(container, countdown, labels);
+		updateDisplay(container, countdown);
 	}
 
 	/**
@@ -182,7 +162,7 @@
 
 		// If no target date, show 0 for all units.
 		if (!targetDate) {
-			updateDisplay(container, zeros, LABELS);
+			updateDisplay(container, ZEROS);
 			return;
 		}
 
@@ -190,11 +170,11 @@
 		const targetUTC = convertToUTC(targetDate, targetTime, timezone);
 
 		// Update immediately.
-		updateCountdown(container, targetUTC, LABELS);
+		updateCountdown(container, targetUTC);
 
 		// Update every second.
 		setInterval(() => {
-			updateCountdown(container, targetUTC, LABELS);
+			updateCountdown(container, targetUTC);
 		}, 1000);
 	}
 

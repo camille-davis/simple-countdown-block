@@ -15,7 +15,7 @@
 function simple_countdown_block_render( $attributes, $content ) {
 	$target_date = isset( $attributes['targetDate'] ) ? $attributes['targetDate'] : '';
 	$target_time = isset( $attributes['targetTime'] ) ? $attributes['targetTime'] : '00:00';
-	$timezone    = isset( $attributes['timezone'] ) ? $attributes['timezone'] : 'UTC';
+	$timezone = isset( $attributes['timezone'] ) ? $attributes['timezone'] : 'UTC';
 
 	// Create unique ID for this countdown instance.
 	$unique_id = wp_unique_id( 'countdown-' );

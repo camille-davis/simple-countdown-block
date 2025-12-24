@@ -20,22 +20,21 @@
 	flex-direction: column;
 	align-items: center;
 	text-align: center;
+	min-width: 5rem;
 }
 
 /* Countdown number display */
 .wp-block-simple-countdown-block-countdown__number {
-	font-size: 2.5rem;
-	font-weight: bold;
-	line-height: 1.2;
+	font-size: 3rem;
+	line-height: 1;
 	margin-bottom: 0.25rem;
 }
 
 /* Countdown label (unit name) */
 .wp-block-simple-countdown-block-countdown__label {
-	font-size: 0.875rem;
+	font-size: 1rem;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	opacity: 0.8;
 }
 
 /* Tablet and smaller screens */
@@ -59,11 +58,7 @@
 		gap: 0.75rem;
 	}
 
-	.wp-block-simple-countdown-block-countdown__number {
-		font-size: 1.5rem;
-	}
-
-	.wp-block-simple-countdown-block-countdown__label {
-		font-size: 0.7rem;
+	.wp-block-simple-countdown-block-countdown__item {
+		min-width: auto;
 	}
 }
