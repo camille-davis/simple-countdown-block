@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "simple-countdown-block/countdown",
+	"title": "Countdown",
+	"category": "widgets",
+	"description": "Display a countdown timer to a selected date.",
+	"keywords": [ "countdown", "timer", "date", "calendar" ],
+	"textdomain": "simple-countdown-block",
+	"attributes": {
+		"targetDate": {
+			"type": "string",
+			"default": ""
+		},
+		"targetTime": {
+			"type": "string",
+			"default": "00:00"
+		},
+		"timezone": {
+			"type": "string",
+			"default": "UTC"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"align": false,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"color": {
+			"text": true,
+			"background": true
+		}
+	},
+	"style": "file:./style.css",
+	"viewScript": "file:./countdown.js"
+}

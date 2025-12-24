@@ -1,0 +1,69 @@
+/**
+ * Countdown Block Styles
+ *
+ * Styles for the Simple Countdown Block display.
+ */
+
+/* Main container - horizontal flex layout */
+.wp-block-simple-countdown-block-countdown__container {
+	display: flex;
+	flex-direction: row;
+	gap: 1.5rem;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+/* Individual countdown unit container */
+.wp-block-simple-countdown-block-countdown__item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+
+/* Countdown number display */
+.wp-block-simple-countdown-block-countdown__number {
+	font-size: 2.5rem;
+	font-weight: bold;
+	line-height: 1.2;
+	margin-bottom: 0.25rem;
+}
+
+/* Countdown label (unit name) */
+.wp-block-simple-countdown-block-countdown__label {
+	font-size: 0.875rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	opacity: 0.8;
+}
+
+/* Tablet and smaller screens */
+@media (max-width: 768px) {
+	.wp-block-simple-countdown-block-countdown__container {
+		gap: 1rem;
+	}
+
+	.wp-block-simple-countdown-block-countdown__number {
+		font-size: 2rem;
+	}
+
+	.wp-block-simple-countdown-block-countdown__label {
+		font-size: 0.75rem;
+	}
+}
+
+/* Mobile screens */
+@media (max-width: 480px) {
+	.wp-block-simple-countdown-block-countdown__container {
+		gap: 0.75rem;
+	}
+
+	.wp-block-simple-countdown-block-countdown__number {
+		font-size: 1.5rem;
+	}
+
+	.wp-block-simple-countdown-block-countdown__label {
+		font-size: 0.7rem;
+	}
+}
