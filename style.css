@@ -8,7 +8,7 @@
 .wp-block-simple-countdown-block-countdown__container {
 	display: flex;
 	flex-direction: row;
-	gap: 1.5rem;
+	gap: 3rem;
 	align-items: center;
 	justify-content: center;
 	flex-wrap: wrap;
